@@ -33,9 +33,9 @@ void setup() {
 
 	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
 
-	brunel = new Actor(brunelSprites, brunelDialogue, 400, 100, scalef, scalef);
+	brunel = new Actor(brunelSprites, brunelDialogue, new Coord(400, 100), new Coord(scalef, scalef));
 
-	brunel.fliph();
+	//brunel.fliph();
 }
 
 void draw() {

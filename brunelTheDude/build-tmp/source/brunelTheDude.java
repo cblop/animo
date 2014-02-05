@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream; 
 import java.io.IOException; 
 
-public class scene1 extends PApplet {
+public class brunelTheDude extends PApplet {
 
 
 final int screenWidth = 800;
@@ -52,9 +52,9 @@ public void setup() {
 
 	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
 
-	brunel = new Actor(brunelSprites, brunelDialogue, 400, 100, scalef, scalef);
+	brunel = new Actor(brunelSprites, brunelDialogue, new Coord(400, 100), new Coord(scalef, scalef));
 
-	brunel.fliph();
+	//brunel.fliph();
 }
 
 public void draw() {
@@ -77,9 +77,9 @@ class Actor extends Object {
 	boolean blinking;
 	boolean moving;
 	int blinkTime;
-	Actor(HashMap<String, PImage> sprs, HashMap<String, Dialogue> dial, float posx, float posy, float scx, float scy){
+	Actor(HashMap<String, PImage> sprs, HashMap<String, Dialogue> dial, Coord loc, Coord sca){
 		// constructor
-		super(sprs.get("rest"), posx, posy, scx, scy);
+		super(sprs.get("rest"), loc, sca);
 		sprites = sprs;
 		dialogue = dial;
 		blinkProb = 0.1f;
@@ -110,8 +110,8 @@ class Actor extends Object {
 
 
 	public void update() {
-		processMouse();
-		moveToTarget();
+		//processMouse();
+		//moveToTarget();
 		String[] lines = {"cool", "laugh", "hello", "disco", "wassup"};
 		boolean flag = false;
 		boolean mouthOpen = false;
@@ -163,6 +163,21 @@ class Actor extends Object {
 
 
 }
+class Animation extends Event {
+	PImage[] frames;
+	Animation(Object obj, float sTime, float d){
+		super(obj, sTime, d);
+	}
+}
+class Coord {
+	float x;
+	float y;
+
+	Coord(float xpos, float ypos) {
+		x = xpos;
+		y = ypos;
+	}
+}
 
 
 
@@ -178,89 +193,137 @@ class Dialogue {
 	}
 
 }
-
-class Object {
-	PImage sprite;
-	float x;
-	float y;
-	float scalex;
-	float scaley;
-	float targetx;
-	float targety;
+class Event {
+	Object object;
+	float startTime;
+	float dur;
+	float elapsed;
 	float speed;
-	float horient;
+	boolean running;
 
-	Object(PImage spr, float posx, float posy, float scx, float scy){
-		sprite = spr;
-		x = posx;
-		y = posy;
-		targetx = posx;
-		targety = posy;
-		scalex = scx;
-		scaley = scy;
-		horient = 1.0f;
-		speed = 3.0f;
+	Event(Object obj, float sTime, float d) {
+		object = obj;
+		startTime = sTime;
+		dur = d;
+		elapsed = 0;
+		running = false;
+		speed = dur / frameRate;
+	}
+
+	public void startEvent() {
+		running = true;
+	}
+
+	public void stopEvent() {
+		running = false;
+	}
+
+}
+class Movement extends Event {
+	//Actor actor;
+	Coord startloc;
+	Coord endloc;
+
+	// Move an object
+	Movement(Object obj, float stime, float d, Coord sloc, Coord eloc) {
+		super(obj, stime, d);
+		startloc = sloc;
+		endloc = eloc;
+
 	}
 
 	public void fliph() {
-		if (horient == 1.0f) {
-			x += (0.5f * sprite.width);
-			targetx += (0.5f * sprite.width);
-			horient = -1.0f;
+		if (object.horient == 1.0f) {
+			object.location.x += (0.5f * object.sprite.width);
+			endloc.x += (0.5f * object.sprite.width);
+			object.horient = -1.0f;
 		}
 		else {
-			x -= (0.5f * sprite.width);
-			targetx -= (0.5f * sprite.width);
-			horient = 1.0f;
+			object.location.x -= (0.5f * object.sprite.width);
+			endloc.x -= (0.5f * object.sprite.width);
+			object.horient = 1.0f;
 		}
 	}
 
-	public void moveTo(float posx, float posy, float spd) {
+	public void move() {
+		if (object.location.x > endloc.x) {
+			object.location.x -= speed;
+		}
+		else if (object.location.x < endloc.x) {
+			object.location.x += speed;
+		}
+
+		if (object.location.y > endloc.y) {
+			object.location.y -= speed;
+		}
+		else if (object.location.y < endloc.y) {
+			object.location.y += speed;
+		}
+	}
+
+	public void update() {
+		if (running) {
+			if (elapsed >= dur) {
+				stopEvent();
+			}
+			else {
+				elapsed++;
+				move();
+			}
+		}
+
+	}
+
+}
+
+class Object {
+	PImage sprite;
+	Coord location;
+	Coord scaleCoord;
+	float horient;
+
+	Object(PImage spr, Coord loc, Coord sca){
+		sprite = spr;
+		location = loc;
+		scaleCoord = sca;
+		horient = 1.0f;
+	}
+
+
+/*
+	void moveTo(float posx, float posy, float spd) {
 		targetx = posx;
 		targety = posy;
 		speed = spd;
 	}
+*/
 
-	public void moveToTarget() {
-		if (x > targetx) {
-			x -= speed;
-		}
-		else if (x < targetx) {
-			x += speed;
-		}
 
-		if (y > targety) {
-			y -= speed;
-		}
-		else if (y < targety) {
-			y += speed;
-		}
-	}
-
-	public void processMouse() {
+/*
+	void processMouse() {
 		if (mousePressed) {
-			moveTo(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2), 1.0f);
+			moveTo(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2), 1.0);
 
-			if (targetx > x && horient == 1.0f){
+			if (target.x > location.x && horient == 1.0){
 				//println("flip1");
 				fliph();
 			}
-			else if (targetx < x && horient == -1.0f){
+			else if (target.x < location.x && horient == -1.0){
 				//println("flip2");
 				fliph();
 			}
 		}
 	}
+	*/
 
 	public void update() {
-		processMouse();
-		moveToTarget();
+		//processMouse();
 	}
 
 	public void display() {
 		pushMatrix();
-		scale(horient * scalex, scaley);
-		image(sprite, horient * x, y, sprite.width, sprite.height);
+		scale(horient * scaleCoord.x, scaleCoord.y);
+		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
 		//println(horient);
 		popMatrix();
 	}
@@ -283,8 +346,81 @@ class Scene {
 		image(bgimage, 0, 0, sceneWidth, sceneHeight);
 	}
 }
+class Speak extends Event {
+	Speak(Actor act, float sTime, float d) {
+		super(act, sTime, d);
+	}
+
+}
+class Timeline {
+	Event[] events;
+	float timePassed;
+	boolean running;
+
+	Timeline(Event[] es) {
+		events = es;
+		timePassed = 0.0f;
+		running = false;
+
+	}
+
+	public void runEvents() {
+		running = true;
+	}
+
+	public void update() {
+		if (running == true) {
+			timePassed++;
+			for (int i = 0; i < events.length; i++) {
+				if (events[i].startTime == timePassed) {
+					events[i].startEvent();
+				}
+			}
+		}
+
+	}
+}
+class Zoom extends Event {
+	Coord startSize;
+	Coord endSize;
+
+	Zoom(Object obj, float stime, float d, Coord sSize, Coord eSize) {
+		super(obj, stime, d);
+		startSize = sSize;
+		endSize = eSize;
+	}
+
+	public void resize() {
+		if (object.scaleCoord.x > endSize.x) {
+			object.scaleCoord.x -= speed;
+		}
+		else if (object.scaleCoord.x < endSize.x) {
+			object.scaleCoord.x += speed;
+		}
+
+		if (object.scaleCoord.y > endSize.y) {
+			object.scaleCoord.y -= speed;
+		}
+		else if (object.scaleCoord.y < endSize.y) {
+			object.scaleCoord.y += speed;
+		}
+	}
+
+	public void update() {
+		if (running) {
+			if (elapsed >= dur) {
+				stopEvent();
+			}
+			else {
+				elapsed++;
+				resize();
+			}
+		}
+	}
+
+}
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "scene1" };
+    String[] appletArgs = new String[] { "brunelTheDude" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {

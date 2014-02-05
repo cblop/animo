@@ -10,9 +10,9 @@ class Actor extends Object {
 	boolean blinking;
 	boolean moving;
 	int blinkTime;
-	Actor(HashMap<String, PImage> sprs, HashMap<String, Dialogue> dial, float posx, float posy, float scx, float scy){
+	Actor(HashMap<String, PImage> sprs, HashMap<String, Dialogue> dial, Coord loc, Coord sca){
 		// constructor
-		super(sprs.get("rest"), posx, posy, scx, scy);
+		super(sprs.get("rest"), loc, sca);
 		sprites = sprs;
 		dialogue = dial;
 		blinkProb = 0.1;
@@ -43,8 +43,8 @@ class Actor extends Object {
 
 
 	void update() {
-		processMouse();
-		moveToTarget();
+		//processMouse();
+		//moveToTarget();
 		String[] lines = {"cool", "laugh", "hello", "disco", "wassup"};
 		boolean flag = false;
 		boolean mouthOpen = false;
