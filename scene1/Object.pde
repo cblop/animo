@@ -19,7 +19,7 @@ class Object {
 		scalex = scx;
 		scaley = scy;
 		horient = 1.0;
-		speed = 1.0;
+		speed = 3.0;
 	}
 
 	void fliph() {
@@ -62,11 +62,11 @@ class Object {
 			moveTo(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2), 1.0);
 
 			if (targetx > x && horient == 1.0){
-				println("flip1");
+				//println("flip1");
 				fliph();
 			}
 			else if (targetx < x && horient == -1.0){
-				println("flip2");
+				//println("flip2");
 				fliph();
 			}
 		}
@@ -81,7 +81,7 @@ class Object {
 		pushMatrix();
 		scale(horient * scalex, scaley);
 		image(sprite, horient * x, y, sprite.width, sprite.height);
-		println(horient);
+		//println(horient);
 		popMatrix();
 	}
 }

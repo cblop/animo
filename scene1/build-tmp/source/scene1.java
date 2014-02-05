@@ -3,6 +3,9 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import ddf.minim.analysis.*; 
+import ddf.minim.*; 
+
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -14,9 +17,10 @@ import java.io.IOException;
 
 public class scene1 extends PApplet {
 
+
 final int screenWidth = 800;
 final int screenHeight = 600;
-final float scalef = 0.7f;
+final float scalef = 1.3f;
 
 Scene scene;
 Actor brunel;
@@ -25,11 +29,31 @@ public void setup() {
 	//addScreen("scene", new Scene(screenWidth, screenHeight));
 	size(screenWidth, screenHeight);
 	PImage bgimg = loadImage("pics/cliftonBridgeBW.jpg");
+
+	HashMap<String, Dialogue> brunelDialogue = new HashMap<String, Dialogue>();
+	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3"));
+	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3"));
+	brunelDialogue.put("hello", new Dialogue("sounds/hello_man.mp3"));
+	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
+	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
+
+	HashMap<String, PImage> brunelSprites = new HashMap<String, PImage>();
+	brunelSprites.put("rest", loadImage("pics/brunel.png"));
+	brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
+	brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
+
+
+	/*
 	PImage brunelimg = loadImage("pics/brunel.png");
 	PImage brunelTalk = loadImage("pics/brunelTalk.png");
 	PImage brunelBlink = loadImage("pics/brunelBlink.png");
+	*/
 	scene = new Scene(PApplet.parseFloat(screenWidth), PApplet.parseFloat(screenHeight), bgimg);
-	brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
+
+	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
+
+	brunel = new Actor(brunelSprites, brunelDialogue, 400, 100, scalef, scalef);
+
 	brunel.fliph();
 }
 
@@ -38,37 +62,119 @@ public void draw() {
 	scene.display();
 	brunel.update();
 	brunel.display();
-	println("X: " + brunel.x + "  Y: " + brunel.y);
+	//println("X: " + brunel.x + "  Y: " + brunel.y);
 }
 
 class Actor extends Object {
 	PImage restImg;
 	PImage talkImg;
 	PImage blinkImg;
-	Actor(PImage rest, PImage talk, PImage blink, float posx, float posy, float scx, float scy){
+	float blinkProb;
+	HashMap<String, Dialogue> dialogue;
+	HashMap<String, PImage> sprites;
+	boolean talkWobble;
+	boolean walkWobble;
+	boolean blinking;
+	boolean moving;
+	int blinkTime;
+	Actor(HashMap<String, PImage> sprs, HashMap<String, Dialogue> dial, float posx, float posy, float scx, float scy){
 		// constructor
-		super(rest, posx, posy, scx, scy);
-		restImg = rest;
-		talkImg = talk;
-		blinkImg = blink;
+		super(sprs.get("rest"), posx, posy, scx, scy);
+		sprites = sprs;
+		dialogue = dial;
+		blinkProb = 0.1f;
+		talkWobble = false;
+		walkWobble = false;
+		blinking = false;
+		blinkTime = 0;
 	}
 
-	public void talk(boolean mouthOpen) {
+	public void mouth(boolean mouthOpen) {
 		if (mouthOpen == true) {
-			sprite = talkImg;
+			sprite = sprites.get("talk");
 		}
 		else {
-			sprite = restImg;
+			sprite = sprites.get("rest");
 		}
 	}
 
-	public void blink(boolean eyesOpen) {
-		if (eyesOpen == true) {
-			sprite = blinkImg;
+	public void blink(boolean eyesShut) {
+		if (eyesShut == true) {
+			println("blinking");
+			sprite = sprites.get("blink");
 		}
 		else {
-			sprite = restImg;
+			sprite = sprites.get("rest");
 		}
+	}
+
+
+	public void update() {
+		processMouse();
+		moveToTarget();
+		String[] lines = {"cool", "laugh", "hello", "disco", "wassup"};
+		boolean flag = false;
+		boolean mouthOpen = false;
+		if (blinking == true) {
+			if (blinkTime > 10) {
+				blinkTime = 0;
+				blinking = false;
+				blink(false);
+			}
+			else {
+				blinkTime++;
+			}
+		}
+
+		for (int i = 0; i < lines.length; i++) {
+			Dialogue d = dialogue.get(lines[i]);
+			if (d.audio.isPlaying()) {
+				d.fft.forward(d.audio.mix);
+				for (int j = 0; j < d.fft.specSize() / 16; j++) {
+					//println(d.fft.getBand(j)*8);
+					if ((d.fft.getBand(j)) > 20) {
+						mouthOpen = true;
+					}
+				}
+				flag = true;
+			}
+		}
+
+		if (random(100) <= 1) {
+			if (flag == false) {
+				dialogue.get(lines[PApplet.parseInt(random(lines.length))]).audio.play(0);
+			}
+		}
+
+		if (random(50) <= 1) {
+			blinking = true;
+			blink(true);
+		}
+
+		if (mouthOpen == true) {
+			mouth(true);
+		}
+		else {
+			if (blinking == false) {
+				mouth(false);
+			}
+		}
+	}
+
+
+}
+
+
+
+Minim minim = new Minim(this);
+class Dialogue {
+	AudioPlayer audio;
+	FFT fft;
+
+	Dialogue(String filename) {
+		audio = minim.loadFile(filename, 512);
+		fft = new FFT(audio.bufferSize(), audio.sampleRate());
+		//fft.forward(audio.mix);
 	}
 
 }
@@ -93,7 +199,7 @@ class Object {
 		scalex = scx;
 		scaley = scy;
 		horient = 1.0f;
-		speed = 1.0f;
+		speed = 3.0f;
 	}
 
 	public void fliph() {
@@ -136,11 +242,11 @@ class Object {
 			moveTo(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2), 1.0f);
 
 			if (targetx > x && horient == 1.0f){
-				println("flip1");
+				//println("flip1");
 				fliph();
 			}
 			else if (targetx < x && horient == -1.0f){
-				println("flip2");
+				//println("flip2");
 				fliph();
 			}
 		}
@@ -155,7 +261,7 @@ class Object {
 		pushMatrix();
 		scale(horient * scalex, scaley);
 		image(sprite, horient * x, y, sprite.width, sprite.height);
-		println(horient);
+		//println(horient);
 		popMatrix();
 	}
 }
