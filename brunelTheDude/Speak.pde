@@ -17,7 +17,7 @@ class Speak extends Event {
 		for (int i = 0; i < dialogue.fft.specSize() / 16; i++) { // only process the first 16th of the spectrum
 			if((dialogue.fft.getBand(i)) > 20) {
 				// move the mouth
-				anim.playOnce();
+				anim.startEvent();
 			}
 		}
 	}

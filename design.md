@@ -1,5 +1,7 @@
 # Animo engine design
 
+Read in events from csv/json
+
 ## Scene
 - bg image
 - objects/actors
@@ -27,4 +29,19 @@ later:
 - time
 - duration
 - object/actor
++ trigger
+
+Maybe?
 - action (animation/movement/music/dialogue)
+
+## Movement < Event
+- startloc (can be set to a const like STAGE_LEFT, or can be worked out based on size)
+- endloc
+- startsize
+- endsize
+- easing?
+
+## Speak < Event
+- dialogue
+
+
