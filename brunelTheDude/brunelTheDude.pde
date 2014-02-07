@@ -18,8 +18,8 @@ void setup() {
 	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
 	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
 
-	HashMap<String, PImage> brunelSprites = new HashMap<String, PImage>();
-	brunelSprites.put("rest", loadImage("pics/brunel.png"));
+	HashMap<String, Animation> brunelAnims = new HashMap<String, PImage>();
+	brunelSprites.put("rest", new Animation({loadImage("pics/brunel.png")}));
 	brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
 	brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
 
