@@ -1,13 +1,11 @@
 class Event {
-	Object object;
 	float startTime;
 	float dur;
 	float elapsed;
 	float speed;
 	boolean running;
 
-	Event(Object obj, float sTime, float d) {
-		object = obj;
+	Event(float sTime, float d) {
 		startTime = sTime;
 		dur = d;
 		elapsed = 0;

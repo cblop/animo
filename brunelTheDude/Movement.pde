@@ -1,11 +1,12 @@
 class Movement extends Event {
 	//Actor actor;
 	Coord startloc;
+	Coord location;
 	Coord endloc;
 
 	// Move an object
-	Movement(Object obj, float stime, float d, Coord sloc, Coord eloc) {
-		super(obj, stime, d);
+	Movement(float stime, float d, Coord sloc, Coord eloc) {
+		super(stime, d);
 		startloc = sloc;
 		endloc = eloc;
 
