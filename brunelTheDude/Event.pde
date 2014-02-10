@@ -4,8 +4,10 @@ class Event {
 	float elapsed;
 	float speed;
 	boolean running;
+	Object object;
 
-	Event(float sTime, float d) {
+	Event(Object obj, float sTime, float d) {
+		object = obj;
 		startTime = sTime;
 		dur = d;
 		elapsed = 0;
