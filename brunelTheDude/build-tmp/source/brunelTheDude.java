@@ -20,18 +20,16 @@ public class brunelTheDude extends PApplet {
 
 final int screenWidth = 800;
 final int screenHeight = 600;
-final float scalef = 1.3f;
+final float scalef = 1.3f; // size of the actor
 
 Scene scene;
 Actor brunel;
-//Event[] events;
-//Actor[] actors;
 
 public void setup() {
-	//addScreen("scene", new Scene(screenWidth, screenHeight));
 	size(screenWidth, screenHeight);
-	PImage bgimg = loadImage("pics/cliftonBridgeBW.jpg");
+	PImage bgimg = loadImage("pics/cliftonBridgeBW.jpg"); // background image
 
+	// put brunel's dialogue into a hash map
 	HashMap<String, Dialogue> brunelDialogue = new HashMap<String, Dialogue>();
 	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3"));
 	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3"));
@@ -39,26 +37,27 @@ public void setup() {
 	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
 	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
 
+	// these are brunel's animations, only one frame each for now
 	PImage[] brunelRest = {loadImage("pics/brunel.png")};
 	PImage[] brunelTalk = {loadImage("pics/brunelTalk.png")};
+	PImage[] brunelBlink = {loadImage("pics/brunelBlink.png")};
 
+	// animations in a hash map
 	HashMap<String, Animation> brunelAnims = new HashMap<String, Animation>();
 	brunelAnims.put("rest", new Animation(brunelRest));
 	brunelAnims.put("talk", new Animation(brunelTalk));
-	//brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
-	//brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
+	brunelAnims.put("blink", new Animation(brunelBlink));
 
-
+	// initialise the Brunel actor
 	brunel = new Actor(new Coord(400, 100), new Coord(scalef, scalef), brunelAnims, brunelDialogue);
-	/*
-	PImage brunelimg = loadImage("pics/brunel.png");
-	PImage brunelTalk = loadImage("pics/brunelTalk.png");
-	PImage brunelBlink = loadImage("pics/brunelBlink.png");
-	*/
+
+	// this is a list of all the events for the animation
 	Event[] events = {
-		//new MoveEvent(brunel, 100.0, 200.0, new Coord(500, 500)), 
+		// MoveEvent arguments: object, start time, duration, target location
 		new MoveEvent(brunel, 100.0f, 20.0f, new Coord(0, 0)),
+		// ZoomEvent arguments: object, start time, duration, target sprite size
 		new ZoomEvent(brunel, 100.0f, 20.0f, new Coord(3.0f, 3.0f)),
+		// SpeakEvent arguments: object, start time, duration, hash map string for line
 		new SpeakEvent(brunel, 100.0f, 20.0f, "cool"),
 		new MoveEvent(brunel, 200.0f, 200.0f, new Coord(100, 0)),
 		new ZoomEvent(brunel, 200.0f, 200.0f, new Coord(1.0f, 1.0f)),
@@ -67,23 +66,19 @@ public void setup() {
 		new SpeakEvent(brunel, 400.0f, 20.0f, "disco"),
 	};
 
-	Actor[] actors = {brunel};
+	Actor[] actors = {brunel}; // list of all actors in the scene
 
+	// create and run the scene
 	scene = new Scene(PApplet.parseFloat(screenWidth), PApplet.parseFloat(screenHeight), bgimg, events, actors);
 	scene.runEvents();
-
-	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
-
-
-	//brunel.fliph();
 }
 
 public void draw() {
+	// just update the scene and actors
 	scene.update();
 	scene.display();
 	brunel.update();
 	brunel.display();
-	//println("X: " + brunel.x + "  Y: " + brunel.y);
 }
 
 class Actor extends Object {
@@ -140,8 +135,6 @@ class Actor extends Object {
 
 	public void update() {
 		processMouse();
-		//println(zoom.x);
-		//println(location.x);
 		sprite = currentAnim.frames[currentAnim.currentFrame];
 	}
 
@@ -152,7 +145,6 @@ class Actor extends Object {
 		pushMatrix();
 		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
-		//println(horient);
 		popMatrix();
 
 	}
@@ -262,7 +254,6 @@ class MoveEvent extends Event {
 		Coord toTarget = new Coord(target.x - object.location.x, target.y - object.location.y);
 		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
 		object.moveTo(target, toTargetLength / dur);
-		//object.moveTo(target, 1.0);
 	}
 }
 
@@ -290,11 +281,9 @@ class Object {
 			moveTo(new Coord(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2)), 3.0f);
 
 			if (target.x > location.x && horient == 1.0f){
-				//println("flip1");
 				fliph();
 			}
 			else if (target.x < location.x && horient == -1.0f){
-				//println("flip2");
 				fliph();
 			}
 		}
@@ -314,8 +303,6 @@ class Object {
 	}
 
 	public void moveTo(Coord trgt, float spd) {
-		//println("moved: "+trgt.x);
-		println("speed: " + speed);
 		target = trgt;
 		speed = spd;
 	}
@@ -333,21 +320,6 @@ class Object {
 			location.y += toTarget.y * speed;
 		}
 
-		/* legacy code
-		if (location.x > target.x) {
-			location.x -= speed;
-		}
-		else if (location.x < target.x) {
-			location.x += speed;
-		}
-
-		if (location.y > target.y) {
-			location.y -= speed;
-		}
-		else if (location.y < target.y) {
-			location.y += speed;
-		}
-		*/
 	}
 
 	public void zoomTo(Coord trgt, float spd) {
@@ -356,6 +328,7 @@ class Object {
 	}
 
 	public void zoom() {
+		// duplicated code - too similar to move()
 		Coord toTarget = new Coord(zoomTarget.x - zoom.x, zoomTarget.y - zoom.y);
 		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
 		toTarget.x = toTarget.x / toTargetLength;
@@ -367,21 +340,6 @@ class Object {
 			zoom.y += toTarget.y * zoomSpeed;
 		}
 
-		/* legacy code
-		if (zoom.x > zoomTarget.x) {
-			zoom.x -= zoomSpeed;
-		}
-		else if (zoom.x < zoomTarget.x) {
-			zoom.x += zoomSpeed;
-		}
-
-		if (zoom.y > zoomTarget.y) {
-			zoom.y -= zoomSpeed;
-		}
-		else if (zoom.y < zoomTarget.y) {
-			zoom.y += zoomSpeed;
-		}
-		*/
 	}
 
 	public void update() {
@@ -394,7 +352,6 @@ class Object {
 		pushMatrix();
 		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
-		//println(horient);
 		popMatrix();
 	}
 }
@@ -425,10 +382,8 @@ class Scene {
 
 	public void update() {
 		if (running == true) {
-			//println(timePassed);
 			timePassed++;
 			for (int i = 0; i < events.length; i++) {
-				//println("timePassed: "+timePassed+"   eventTime: "+events[i].startTime);
 				if (events[i].startTime == timePassed) {
 					println("event: " + events[i].startTime);
 					events[i].trigger();
@@ -453,7 +408,6 @@ class SpeakEvent extends Event {
 
 	public void trigger() {
 		running = true;
-		//object.speech = object.dialogue.get(dialogue);
 		actor.setSpeech(dialogue);
 		actor.sayLine();
 		actor.speaking = true;

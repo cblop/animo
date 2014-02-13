@@ -27,7 +27,7 @@ void setup() {
 	HashMap<String, Animation> brunelAnims = new HashMap<String, Animation>();
 	brunelAnims.put("rest", new Animation(brunelRest));
 	brunelAnims.put("talk", new Animation(brunelTalk));
-	brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
+	brunelAnims.put("blink", new Animation(brunelBlink));
 
 	// initialise the Brunel actor
 	brunel = new Actor(new Coord(400, 100), new Coord(scalef, scalef), brunelAnims, brunelDialogue);
