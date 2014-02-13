@@ -12,7 +12,7 @@ class Object {
 	Object(PImage spr, Coord loc, Coord sca){
 		sprite = spr;
 		location = loc;
-		target = loc;
+		target = location;
 		zoom = sca;
 		zoomTarget = sca;
 		horient = 1.0;
@@ -20,7 +20,7 @@ class Object {
 
 	void processMouse() {
 		if (mousePressed) {
-			moveTo(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2), 1.0);
+			moveTo(new Coord(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2)), 3.0);
 
 			if (target.x > location.x && horient == 1.0){
 				//println("flip1");
@@ -47,12 +47,26 @@ class Object {
 	}
 
 	void moveTo(Coord trgt, float spd) {
+		//println("moved: "+trgt.x);
+		println("speed: " + speed);
 		target = trgt;
 		speed = spd;
 	}
 
 
 	void move() {
+		Coord toTarget = new Coord(target.x - location.x, target.y - location.y);
+		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
+		toTarget.x = toTarget.x / toTargetLength;
+		toTarget.y = toTarget.y / toTargetLength;
+
+		// this is a kludge?
+		if (toTargetLength > speed) {
+			location.x += toTarget.x * speed;
+			location.y += toTarget.y * speed;
+		}
+
+		/* legacy code
 		if (location.x > target.x) {
 			location.x -= speed;
 		}
@@ -66,9 +80,27 @@ class Object {
 		else if (location.y < target.y) {
 			location.y += speed;
 		}
+		*/
+	}
+
+	void zoomTo(Coord trgt, float spd) {
+		zoomTarget = trgt;
+		zoomSpeed = spd;
 	}
 
 	void zoom() {
+		Coord toTarget = new Coord(zoomTarget.x - zoom.x, zoomTarget.y - zoom.y);
+		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
+		toTarget.x = toTarget.x / toTargetLength;
+		toTarget.y = toTarget.y / toTargetLength;
+
+		// this is a kludge?
+		if (toTargetLength > zoomSpeed) {
+			zoom.x += toTarget.x * zoomSpeed;
+			zoom.y += toTarget.y * zoomSpeed;
+		}
+
+		/* legacy code
 		if (zoom.x > zoomTarget.x) {
 			zoom.x -= zoomSpeed;
 		}
@@ -82,17 +114,18 @@ class Object {
 		else if (zoom.y < zoomTarget.y) {
 			zoom.y += zoomSpeed;
 		}
+		*/
 	}
 
 	void update() {
-		//processMouse();
-		move();
-		zoom();
+		processMouse();
 	}
 
 	void display() {
+		move();
+		zoom();
 		pushMatrix();
-		scale(horient * scaleCoord.x, scaleCoord.y);
+		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
 		//println(horient);
 		popMatrix();

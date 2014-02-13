@@ -25,10 +25,13 @@ class Scene {
 
 	void update() {
 		if (running == true) {
+			//println(timePassed);
 			timePassed++;
 			for (int i = 0; i < events.length; i++) {
+				//println("timePassed: "+timePassed+"   eventTime: "+events[i].startTime);
 				if (events[i].startTime == timePassed) {
-					events[i].startEvent();
+					println("event: " + events[i].startTime);
+					events[i].trigger();
 				}
 			}
 		}

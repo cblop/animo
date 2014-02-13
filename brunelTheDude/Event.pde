@@ -15,11 +15,11 @@ class Event {
 		speed = dur / frameRate;
 	}
 
-	void startEvent() {
+	void trigger() {
 		running = true;
 	}
 
-	void stopEvent() {
+	void stop() {
 		running = false;
 	}
 

@@ -24,6 +24,8 @@ final float scalef = 1.3f;
 
 Scene scene;
 Actor brunel;
+//Event[] events;
+//Actor[] actors;
 
 public void setup() {
 	//addScreen("scene", new Scene(screenWidth, screenHeight));
@@ -37,22 +39,41 @@ public void setup() {
 	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
 	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
 
-	HashMap<String, PImage> brunelSprites = new HashMap<String, PImage>();
-	brunelSprites.put("rest", loadImage("pics/brunel.png"));
-	brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
-	brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
+	PImage[] brunelRest = {loadImage("pics/brunel.png")};
+	PImage[] brunelTalk = {loadImage("pics/brunelTalk.png")};
+
+	HashMap<String, Animation> brunelAnims = new HashMap<String, Animation>();
+	brunelAnims.put("rest", new Animation(brunelRest));
+	brunelAnims.put("talk", new Animation(brunelTalk));
+	//brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
+	//brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
 
 
+	brunel = new Actor(new Coord(400, 100), new Coord(scalef, scalef), brunelAnims, brunelDialogue);
 	/*
 	PImage brunelimg = loadImage("pics/brunel.png");
 	PImage brunelTalk = loadImage("pics/brunelTalk.png");
 	PImage brunelBlink = loadImage("pics/brunelBlink.png");
 	*/
-	scene = new Scene(PApplet.parseFloat(screenWidth), PApplet.parseFloat(screenHeight), bgimg);
+	Event[] events = {
+		//new MoveEvent(brunel, 100.0, 200.0, new Coord(500, 500)), 
+		new MoveEvent(brunel, 100.0f, 20.0f, new Coord(0, 0)),
+		new ZoomEvent(brunel, 100.0f, 20.0f, new Coord(3.0f, 3.0f)),
+		new SpeakEvent(brunel, 100.0f, 20.0f, "cool"),
+		new MoveEvent(brunel, 200.0f, 200.0f, new Coord(100, 0)),
+		new ZoomEvent(brunel, 200.0f, 200.0f, new Coord(1.0f, 1.0f)),
+		new ZoomEvent(brunel, 300.0f, 10.0f, new Coord(1.0f, 1.0f)),
+		new MoveEvent(brunel, 300.0f, 200.0f, new Coord(400, 0)),
+		new SpeakEvent(brunel, 400.0f, 20.0f, "disco"),
+	};
+
+	Actor[] actors = {brunel};
+
+	scene = new Scene(PApplet.parseFloat(screenWidth), PApplet.parseFloat(screenHeight), bgimg, events, actors);
+	scene.runEvents();
 
 	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
 
-	brunel = new Actor(brunelSprites, brunelDialogue, new Coord(400, 100), new Coord(scalef, scalef));
 
 	//brunel.fliph();
 }
@@ -66,107 +87,117 @@ public void draw() {
 }
 
 class Actor extends Object {
-	PImage restImg;
-	PImage talkImg;
-	PImage blinkImg;
-	float blinkProb;
+	HashMap<String, Animation> animations;
 	HashMap<String, Dialogue> dialogue;
-	HashMap<String, PImage> sprites;
-	boolean talkWobble;
-	boolean walkWobble;
-	boolean blinking;
-	boolean moving;
-	int blinkTime;
-	Actor(HashMap<String, PImage> sprs, HashMap<String, Dialogue> dial, Coord loc, Coord sca){
+	Animation currentAnim;
+	Dialogue speech;
+	Boolean speaking;
+	Actor(Coord loc, Coord sca, HashMap<String, Animation> anims, HashMap<String, Dialogue> dial){
 		// constructor
-		super(sprs.get("rest"), loc, sca);
-		sprites = sprs;
+		super(anims.get("rest").frames[0], loc, sca);
+		animations = anims;
 		dialogue = dial;
-		blinkProb = 0.1f;
-		talkWobble = false;
-		walkWobble = false;
-		blinking = false;
-		blinkTime = 0;
+		currentAnim = anims.get("rest");
+		speaking = false;
+		speech = dialogue.get("hello"); // very, very bad
 	}
 
-	public void mouth(boolean mouthOpen) {
-		if (mouthOpen == true) {
-			sprite = sprites.get("talk");
-		}
-		else {
-			sprite = sprites.get("rest");
-		}
+	public void setSpeech(String spch) {
+		speech = dialogue.get(spch);
 	}
 
-	public void blink(boolean eyesShut) {
-		if (eyesShut == true) {
-			println("blinking");
-			sprite = sprites.get("blink");
-		}
-		else {
-			sprite = sprites.get("rest");
-		}
-	}
-
-
-	public void update() {
-		//processMouse();
-		//moveToTarget();
-		String[] lines = {"cool", "laugh", "hello", "disco", "wassup"};
+	public void moveMouth() {
 		boolean flag = false;
-		boolean mouthOpen = false;
-		if (blinking == true) {
-			if (blinkTime > 10) {
-				blinkTime = 0;
-				blinking = false;
-				blink(false);
+		speech.fft.forward(speech.audio.mix);
+		for (int i = 0; i < speech.fft.specSize() / 16; i++) { // only process the first 16th of the spectrum
+			if((speech.fft.getBand(i)) > 20) {
+				// move the mouth
+				//animations.get("talk").playAnim();
+				sprite = animations.get("talk").frames[0];
 			}
 			else {
-				blinkTime++;
+				//sprite = animations.get("rest").frames[0];
 			}
 		}
+	}
 
-		for (int i = 0; i < lines.length; i++) {
-			Dialogue d = dialogue.get(lines[i]);
-			if (d.audio.isPlaying()) {
-				d.fft.forward(d.audio.mix);
-				for (int j = 0; j < d.fft.specSize() / 16; j++) {
-					//println(d.fft.getBand(j)*8);
-					if ((d.fft.getBand(j)) > 20) {
-						mouthOpen = true;
-					}
-				}
-				flag = true;
-			}
+	public void sayLine() {
+		if (!speech.audio.isPlaying()) {
+			speech.audio.play(0); // 0 means from the beginning
 		}
+	}
 
-		if (random(100) <= 1) {
-			if (flag == false) {
-				dialogue.get(lines[PApplet.parseInt(random(lines.length))]).audio.play(0);
-			}
+	public void speak() {
+		if (speech.audio.position() >= speech.audio.length()) {
+			speaking = false;
+		}
+		if (speaking == true) {
+			moveMouth();
 		}
 
-		if (random(50) <= 1) {
-			blinking = true;
-			blink(true);
-		}
 
-		if (mouthOpen == true) {
-			mouth(true);
-		}
-		else {
-			if (blinking == false) {
-				mouth(false);
-			}
-		}
+	}
+
+	public void update() {
+		processMouse();
+		//println(zoom.x);
+		//println(location.x);
+		sprite = currentAnim.frames[currentAnim.currentFrame];
+	}
+
+	public void display() {
+		speak();
+		move();
+		zoom();
+		pushMatrix();
+		scale(horient * zoom.x, zoom.y);
+		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
+		//println(horient);
+		popMatrix();
+
 	}
 
 
 }
-class Animation extends Event {
-	PImage[] frames;
-	Animation(Object obj, float sTime, float d){
+class AnimEvent extends Event {
+	String animName;
+	Actor object;
+	AnimEvent(Actor obj, float sTime, float d, String aname) {
 		super(obj, sTime, d);
+		animName = aname;
+	}
+
+	public void trigger() {
+		object.animations.get(animName).playAnim();
+	}
+}
+class Animation {
+	PImage[] frames;
+	int currentFrame;
+	boolean running;
+	Animation(PImage[] frms){
+		frames = frms;
+		currentFrame = 0;
+	}
+
+	public void playAnim() {
+		running = true;
+		currentFrame++;
+	}
+
+	public void stopAnim() {
+		running = false;
+		currentFrame = 0;
+	}
+
+	public void update() {
+		if (running) {
+			playAnim();
+			if (currentFrame >= frames.length) {
+				stopAnim();
+			}
+		}
+
 	}
 }
 class Coord {
@@ -194,12 +225,12 @@ class Dialogue {
 
 }
 class Event {
-	Object object;
 	float startTime;
 	float dur;
 	float elapsed;
 	float speed;
 	boolean running;
+	Object object;
 
 	Event(Object obj, float sTime, float d) {
 		object = obj;
@@ -210,119 +241,158 @@ class Event {
 		speed = dur / frameRate;
 	}
 
-	public void startEvent() {
+	public void trigger() {
 		running = true;
 	}
 
-	public void stopEvent() {
+	public void stop() {
 		running = false;
 	}
 
 }
-class Movement extends Event {
-	//Actor actor;
-	Coord startloc;
-	Coord endloc;
-
-	// Move an object
-	Movement(Object obj, float stime, float d, Coord sloc, Coord eloc) {
-		super(obj, stime, d);
-		startloc = sloc;
-		endloc = eloc;
-
+class MoveEvent extends Event {
+	Coord target;
+	MoveEvent(Object obj, float sTime, float d, Coord targ) {
+		super(obj, sTime, d);
+		target = targ;
 	}
 
-	public void fliph() {
-		if (object.horient == 1.0f) {
-			object.location.x += (0.5f * object.sprite.width);
-			endloc.x += (0.5f * object.sprite.width);
-			object.horient = -1.0f;
-		}
-		else {
-			object.location.x -= (0.5f * object.sprite.width);
-			endloc.x -= (0.5f * object.sprite.width);
-			object.horient = 1.0f;
-		}
+	public void trigger() {
+		running = true;
+		Coord toTarget = new Coord(target.x - object.location.x, target.y - object.location.y);
+		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
+		object.moveTo(target, toTargetLength / dur);
+		//object.moveTo(target, 1.0);
 	}
-
-	public void move() {
-		if (object.location.x > endloc.x) {
-			object.location.x -= speed;
-		}
-		else if (object.location.x < endloc.x) {
-			object.location.x += speed;
-		}
-
-		if (object.location.y > endloc.y) {
-			object.location.y -= speed;
-		}
-		else if (object.location.y < endloc.y) {
-			object.location.y += speed;
-		}
-	}
-
-	public void update() {
-		if (running) {
-			if (elapsed >= dur) {
-				stopEvent();
-			}
-			else {
-				elapsed++;
-				move();
-			}
-		}
-
-	}
-
 }
 
 class Object {
 	PImage sprite;
 	Coord location;
-	Coord scaleCoord;
+	Coord target;
+	Coord zoom;
+	Coord zoomTarget;
+	float zoomSpeed;
+	float speed;
 	float horient;
 
 	Object(PImage spr, Coord loc, Coord sca){
 		sprite = spr;
 		location = loc;
-		scaleCoord = sca;
+		target = location;
+		zoom = sca;
+		zoomTarget = sca;
 		horient = 1.0f;
 	}
 
-
-/*
-	void moveTo(float posx, float posy, float spd) {
-		targetx = posx;
-		targety = posy;
-		speed = spd;
-	}
-*/
-
-
-/*
-	void processMouse() {
+	public void processMouse() {
 		if (mousePressed) {
-			moveTo(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2), 1.0);
+			moveTo(new Coord(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2)), 3.0f);
 
-			if (target.x > location.x && horient == 1.0){
+			if (target.x > location.x && horient == 1.0f){
 				//println("flip1");
 				fliph();
 			}
-			else if (target.x < location.x && horient == -1.0){
+			else if (target.x < location.x && horient == -1.0f){
 				//println("flip2");
 				fliph();
 			}
 		}
 	}
-	*/
+
+	public void fliph() {
+		if (horient == 1.0f) {
+			location.x += (0.5f * sprite.width);
+			target.x += (0.5f * sprite.width);
+			horient = -1.0f;
+		}
+		else {
+			location.x -= (0.5f * sprite.width);
+			target.x -= (0.5f * sprite.width);
+			horient = 1.0f;
+		}
+	}
+
+	public void moveTo(Coord trgt, float spd) {
+		//println("moved: "+trgt.x);
+		println("speed: " + speed);
+		target = trgt;
+		speed = spd;
+	}
+
+
+	public void move() {
+		Coord toTarget = new Coord(target.x - location.x, target.y - location.y);
+		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
+		toTarget.x = toTarget.x / toTargetLength;
+		toTarget.y = toTarget.y / toTargetLength;
+
+		// this is a kludge?
+		if (toTargetLength > speed) {
+			location.x += toTarget.x * speed;
+			location.y += toTarget.y * speed;
+		}
+
+		/* legacy code
+		if (location.x > target.x) {
+			location.x -= speed;
+		}
+		else if (location.x < target.x) {
+			location.x += speed;
+		}
+
+		if (location.y > target.y) {
+			location.y -= speed;
+		}
+		else if (location.y < target.y) {
+			location.y += speed;
+		}
+		*/
+	}
+
+	public void zoomTo(Coord trgt, float spd) {
+		zoomTarget = trgt;
+		zoomSpeed = spd;
+	}
+
+	public void zoom() {
+		Coord toTarget = new Coord(zoomTarget.x - zoom.x, zoomTarget.y - zoom.y);
+		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
+		toTarget.x = toTarget.x / toTargetLength;
+		toTarget.y = toTarget.y / toTargetLength;
+
+		// this is a kludge?
+		if (toTargetLength > zoomSpeed) {
+			zoom.x += toTarget.x * zoomSpeed;
+			zoom.y += toTarget.y * zoomSpeed;
+		}
+
+		/* legacy code
+		if (zoom.x > zoomTarget.x) {
+			zoom.x -= zoomSpeed;
+		}
+		else if (zoom.x < zoomTarget.x) {
+			zoom.x += zoomSpeed;
+		}
+
+		if (zoom.y > zoomTarget.y) {
+			zoom.y -= zoomSpeed;
+		}
+		else if (zoom.y < zoomTarget.y) {
+			zoom.y += zoomSpeed;
+		}
+		*/
+	}
 
 	public void update() {
-		//processMouse();
+		processMouse();
 	}
 
 	public void display() {
+		move();
+		zoom();
 		pushMatrix();
-		scale(horient * scaleCoord.x, scaleCoord.y);
+		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
 		//println(horient);
 		popMatrix();
@@ -333,35 +403,20 @@ class Scene {
 	PImage bgimage;
 	float sceneWidth;
 	float sceneHeight;
-	Scene(float sWidth, float sHeight, PImage bgi){
-		sceneWidth = sWidth;
-		sceneHeight = sHeight;
-		bgimage = bgi;
-	}
-	public void update() {
-
-	}
-	public void display() {
-		// show the background image
-		image(bgimage, 0, 0, sceneWidth, sceneHeight);
-	}
-}
-class Speak extends Event {
-	Speak(Actor act, float sTime, float d) {
-		super(act, sTime, d);
-	}
-
-}
-class Timeline {
 	Event[] events;
+	Actor[] actors;
 	float timePassed;
 	boolean running;
 
-	Timeline(Event[] es) {
+	Scene(float sWidth, float sHeight, PImage bgi, Event[] es, Actor[] acts){
+		sceneWidth = sWidth;
+		sceneHeight = sHeight;
+		bgimage = bgi;
+
 		events = es;
+		actors = acts;
 		timePassed = 0.0f;
 		running = false;
-
 	}
 
 	public void runEvents() {
@@ -370,54 +425,54 @@ class Timeline {
 
 	public void update() {
 		if (running == true) {
+			//println(timePassed);
 			timePassed++;
 			for (int i = 0; i < events.length; i++) {
+				//println("timePassed: "+timePassed+"   eventTime: "+events[i].startTime);
 				if (events[i].startTime == timePassed) {
-					events[i].startEvent();
+					println("event: " + events[i].startTime);
+					events[i].trigger();
 				}
 			}
 		}
 
 	}
+	public void display() {
+		// show the background image
+		image(bgimage, 0, 0, sceneWidth, sceneHeight);
+	}
 }
-class Zoom extends Event {
-	Coord startSize;
-	Coord endSize;
-
-	Zoom(Object obj, float stime, float d, Coord sSize, Coord eSize) {
-		super(obj, stime, d);
-		startSize = sSize;
-		endSize = eSize;
+class SpeakEvent extends Event {
+	Actor actor;
+	String dialogue;
+	SpeakEvent(Actor act, float sTime, float d, String dial) {
+		super(act, sTime, d);
+		actor = act;
+		dialogue = dial;
 	}
 
-	public void resize() {
-		if (object.scaleCoord.x > endSize.x) {
-			object.scaleCoord.x -= speed;
-		}
-		else if (object.scaleCoord.x < endSize.x) {
-			object.scaleCoord.x += speed;
-		}
-
-		if (object.scaleCoord.y > endSize.y) {
-			object.scaleCoord.y -= speed;
-		}
-		else if (object.scaleCoord.y < endSize.y) {
-			object.scaleCoord.y += speed;
-		}
+	public void trigger() {
+		running = true;
+		//object.speech = object.dialogue.get(dialogue);
+		actor.setSpeech(dialogue);
+		actor.sayLine();
+		actor.speaking = true;
 	}
 
-	public void update() {
-		if (running) {
-			if (elapsed >= dur) {
-				stopEvent();
-			}
-			else {
-				elapsed++;
-				resize();
-			}
-		}
+}
+class ZoomEvent extends Event {
+	Coord target;
+	ZoomEvent(Object obj, float sTime, float d, Coord targ) {
+		super(obj, sTime, d);
+		target = targ;
 	}
 
+	public void trigger() {
+		running = true;
+		Coord toTarget = new Coord(target.x - object.zoom.x, target.y - object.zoom.y);
+		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
+		object.zoomTo(target, toTargetLength / dur);
+	}
 }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "brunelTheDude" };

@@ -1,5 +1,14 @@
 # Animo engine design
 
+Todo:
+
+- smooth animation
+- smooth zoom
+- play talk sound on command receive
+- play talk animation on command receive
+- read in RDF 
+- process RDF items as commands
+
 Read in events from csv/json
 
 ## Scene

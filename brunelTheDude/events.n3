@@ -1,0 +1,14 @@
+@prefix event: <http://purl.org/NET/c4dm/event.owl#>
+@prefix time: <http://www.w3.org/2006/time#> .
+
+event:moveDuration
+	a time:Interval ;
+	time:hasBeginning event:moveStart .
+	time:hasDurationDescription
+		time:seconds 12.5 .
+
+
+event:moveStart
+	a time:Instant ;
+	time:inDateTime
+		time:seconds 2.0 .

@@ -5,6 +5,8 @@ final float scalef = 1.3;
 
 Scene scene;
 Actor brunel;
+//Event[] events;
+//Actor[] actors;
 
 void setup() {
 	//addScreen("scene", new Scene(screenWidth, screenHeight));
@@ -18,22 +20,41 @@ void setup() {
 	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
 	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
 
-	HashMap<String, Animation> brunelAnims = new HashMap<String, PImage>();
-	brunelSprites.put("rest", new Animation({loadImage("pics/brunel.png")}));
-	brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
-	brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
+	PImage[] brunelRest = {loadImage("pics/brunel.png")};
+	PImage[] brunelTalk = {loadImage("pics/brunelTalk.png")};
+
+	HashMap<String, Animation> brunelAnims = new HashMap<String, Animation>();
+	brunelAnims.put("rest", new Animation(brunelRest));
+	brunelAnims.put("talk", new Animation(brunelTalk));
+	//brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
+	//brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
 
 
+	brunel = new Actor(new Coord(400, 100), new Coord(scalef, scalef), brunelAnims, brunelDialogue);
 	/*
 	PImage brunelimg = loadImage("pics/brunel.png");
 	PImage brunelTalk = loadImage("pics/brunelTalk.png");
 	PImage brunelBlink = loadImage("pics/brunelBlink.png");
 	*/
-	scene = new Scene(float(screenWidth), float(screenHeight), bgimg);
+	Event[] events = {
+		//new MoveEvent(brunel, 100.0, 200.0, new Coord(500, 500)), 
+		new MoveEvent(brunel, 100.0, 20.0, new Coord(0, 0)),
+		new ZoomEvent(brunel, 100.0, 20.0, new Coord(3.0, 3.0)),
+		new SpeakEvent(brunel, 100.0, 20.0, "cool"),
+		new MoveEvent(brunel, 200.0, 200.0, new Coord(100, 0)),
+		new ZoomEvent(brunel, 200.0, 200.0, new Coord(1.0, 1.0)),
+		new ZoomEvent(brunel, 300.0, 10.0, new Coord(1.0, 1.0)),
+		new MoveEvent(brunel, 300.0, 200.0, new Coord(400, 0)),
+		new SpeakEvent(brunel, 400.0, 20.0, "disco"),
+	};
+
+	Actor[] actors = {brunel};
+
+	scene = new Scene(float(screenWidth), float(screenHeight), bgimg, events, actors);
+	scene.runEvents();
 
 	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
 
-	brunel = new Actor(brunelSprites, brunelDialogue, new Coord(400, 100), new Coord(scalef, scalef));
 
 	//brunel.fliph();
 }

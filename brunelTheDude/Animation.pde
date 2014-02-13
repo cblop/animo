@@ -1,22 +1,27 @@
-class Animation extends Event {
+class Animation {
 	PImage[] frames;
 	int currentFrame;
-	Animation(Object obj, float sTime, float d, PImage[] frms){
-		super(obj, sTime, d);
+	boolean running;
+	Animation(PImage[] frms){
 		frames = frms;
 		currentFrame = 0;
 	}
 
 	void playAnim() {
-		object.sprite = frames[currentFrame];
+		running = true;
 		currentFrame++;
+	}
+
+	void stopAnim() {
+		running = false;
+		currentFrame = 0;
 	}
 
 	void update() {
 		if (running) {
 			playAnim();
 			if (currentFrame >= frames.length) {
-				stopEvent();
+				stopAnim();
 			}
 		}
 
