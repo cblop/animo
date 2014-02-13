@@ -10,6 +10,5 @@ class MoveEvent extends Event {
 		Coord toTarget = new Coord(target.x - object.location.x, target.y - object.location.y);
 		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
 		object.moveTo(target, toTargetLength / dur);
-		//object.moveTo(target, 1.0);
 	}
 }

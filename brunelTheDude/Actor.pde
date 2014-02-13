@@ -52,8 +52,6 @@ class Actor extends Object {
 
 	void update() {
 		processMouse();
-		//println(zoom.x);
-		//println(location.x);
 		sprite = currentAnim.frames[currentAnim.currentFrame];
 	}
 
@@ -64,7 +62,6 @@ class Actor extends Object {
 		pushMatrix();
 		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
-		//println(horient);
 		popMatrix();
 
 	}

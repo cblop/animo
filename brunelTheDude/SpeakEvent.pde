@@ -9,7 +9,6 @@ class SpeakEvent extends Event {
 
 	void trigger() {
 		running = true;
-		//object.speech = object.dialogue.get(dialogue);
 		actor.setSpeech(dialogue);
 		actor.sayLine();
 		actor.speaking = true;

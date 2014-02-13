@@ -23,11 +23,9 @@ class Object {
 			moveTo(new Coord(mouseX - (sprite.width / 2), mouseY - (sprite.height / 2)), 3.0);
 
 			if (target.x > location.x && horient == 1.0){
-				//println("flip1");
 				fliph();
 			}
 			else if (target.x < location.x && horient == -1.0){
-				//println("flip2");
 				fliph();
 			}
 		}
@@ -47,8 +45,6 @@ class Object {
 	}
 
 	void moveTo(Coord trgt, float spd) {
-		//println("moved: "+trgt.x);
-		println("speed: " + speed);
 		target = trgt;
 		speed = spd;
 	}
@@ -66,21 +62,6 @@ class Object {
 			location.y += toTarget.y * speed;
 		}
 
-		/* legacy code
-		if (location.x > target.x) {
-			location.x -= speed;
-		}
-		else if (location.x < target.x) {
-			location.x += speed;
-		}
-
-		if (location.y > target.y) {
-			location.y -= speed;
-		}
-		else if (location.y < target.y) {
-			location.y += speed;
-		}
-		*/
 	}
 
 	void zoomTo(Coord trgt, float spd) {
@@ -89,6 +70,7 @@ class Object {
 	}
 
 	void zoom() {
+		// duplicated code - too similar to move()
 		Coord toTarget = new Coord(zoomTarget.x - zoom.x, zoomTarget.y - zoom.y);
 		float toTargetLength = sqrt(sq(toTarget.x) + sq(toTarget.y));
 		toTarget.x = toTarget.x / toTargetLength;
@@ -100,21 +82,6 @@ class Object {
 			zoom.y += toTarget.y * zoomSpeed;
 		}
 
-		/* legacy code
-		if (zoom.x > zoomTarget.x) {
-			zoom.x -= zoomSpeed;
-		}
-		else if (zoom.x < zoomTarget.x) {
-			zoom.x += zoomSpeed;
-		}
-
-		if (zoom.y > zoomTarget.y) {
-			zoom.y -= zoomSpeed;
-		}
-		else if (zoom.y < zoomTarget.y) {
-			zoom.y += zoomSpeed;
-		}
-		*/
 	}
 
 	void update() {
@@ -127,7 +94,6 @@ class Object {
 		pushMatrix();
 		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
-		//println(horient);
 		popMatrix();
 	}
 }

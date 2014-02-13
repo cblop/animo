@@ -1,18 +1,16 @@
 
 final int screenWidth = 800;
 final int screenHeight = 600;
-final float scalef = 1.3;
+final float scalef = 1.3; // size of the actor
 
 Scene scene;
 Actor brunel;
-//Event[] events;
-//Actor[] actors;
 
 void setup() {
-	//addScreen("scene", new Scene(screenWidth, screenHeight));
 	size(screenWidth, screenHeight);
-	PImage bgimg = loadImage("pics/cliftonBridgeBW.jpg");
+	PImage bgimg = loadImage("pics/cliftonBridgeBW.jpg"); // background image
 
+	// put brunel's dialogue into a hash map
 	HashMap<String, Dialogue> brunelDialogue = new HashMap<String, Dialogue>();
 	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3"));
 	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3"));
@@ -20,26 +18,27 @@ void setup() {
 	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
 	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
 
+	// these are brunel's animations, only one frame each for now
 	PImage[] brunelRest = {loadImage("pics/brunel.png")};
 	PImage[] brunelTalk = {loadImage("pics/brunelTalk.png")};
+	PImage[] brunelBlink = {loadImage("pics/brunelBlink.png")};
 
+	// animations in a hash map
 	HashMap<String, Animation> brunelAnims = new HashMap<String, Animation>();
 	brunelAnims.put("rest", new Animation(brunelRest));
 	brunelAnims.put("talk", new Animation(brunelTalk));
-	//brunelSprites.put("talk", loadImage("pics/brunelTalk.png"));
-	//brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
+	brunelSprites.put("blink", loadImage("pics/brunelBlink.png"));
 
-
+	// initialise the Brunel actor
 	brunel = new Actor(new Coord(400, 100), new Coord(scalef, scalef), brunelAnims, brunelDialogue);
-	/*
-	PImage brunelimg = loadImage("pics/brunel.png");
-	PImage brunelTalk = loadImage("pics/brunelTalk.png");
-	PImage brunelBlink = loadImage("pics/brunelBlink.png");
-	*/
+
+	// this is a list of all the events for the animation
 	Event[] events = {
-		//new MoveEvent(brunel, 100.0, 200.0, new Coord(500, 500)), 
+		// MoveEvent arguments: object, start time, duration, target location
 		new MoveEvent(brunel, 100.0, 20.0, new Coord(0, 0)),
+		// ZoomEvent arguments: object, start time, duration, target sprite size
 		new ZoomEvent(brunel, 100.0, 20.0, new Coord(3.0, 3.0)),
+		// SpeakEvent arguments: object, start time, duration, hash map string for line
 		new SpeakEvent(brunel, 100.0, 20.0, "cool"),
 		new MoveEvent(brunel, 200.0, 200.0, new Coord(100, 0)),
 		new ZoomEvent(brunel, 200.0, 200.0, new Coord(1.0, 1.0)),
@@ -48,22 +47,18 @@ void setup() {
 		new SpeakEvent(brunel, 400.0, 20.0, "disco"),
 	};
 
-	Actor[] actors = {brunel};
+	Actor[] actors = {brunel}; // list of all actors in the scene
 
+	// create and run the scene
 	scene = new Scene(float(screenWidth), float(screenHeight), bgimg, events, actors);
 	scene.runEvents();
-
-	//Actor brunel = new Actor(brunelimg, brunelTalk, brunelBlink, 400, 100, scalef, scalef);
-
-
-	//brunel.fliph();
 }
 
 void draw() {
+	// just update the scene and actors
 	scene.update();
 	scene.display();
 	brunel.update();
 	brunel.display();
-	//println("X: " + brunel.x + "  Y: " + brunel.y);
 }
 
