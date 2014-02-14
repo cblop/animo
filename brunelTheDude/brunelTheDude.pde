@@ -12,11 +12,11 @@ void setup() {
 
 	// put brunel's dialogue into a hash map
 	HashMap<String, Dialogue> brunelDialogue = new HashMap<String, Dialogue>();
-	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3"));
-	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3"));
-	brunelDialogue.put("hello", new Dialogue("sounds/hello_man.mp3"));
-	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
-	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
+	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3", "Cool, man!"));
+	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3", "Hahahaha"));
+	brunelDialogue.put("hello", new Dialogue("sounds/hello_man.mp3", "Hello, man!"));
+	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3", "I love disco!"));
+	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3", "Wassup!"));
 
 	// these are brunel's animations, only one frame each for now
 	PImage[] brunelRest = {loadImage("pics/brunel.png")};

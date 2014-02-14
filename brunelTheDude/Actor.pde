@@ -12,6 +12,7 @@ class Actor extends Object {
 		currentAnim = anims.get("rest");
 		speaking = false;
 		speech = dialogue.get("hello"); // very, very bad
+		speech.subtitle = ""; // nooooooo
 	}
 
 	void setSpeech(String spch) {
@@ -39,8 +40,24 @@ class Actor extends Object {
 		}
 	}
 
+	void showSubs() {
+		textSize(32);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x)-2, abs(location.y) + 50);
+		textSize(32);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x)+2, abs(location.y) + 50);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x), abs(location.y) + 52);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x), abs(location.y) + 48);
+
+		fill(255, 255, 255);
+		text(speech.subtitle, abs(location.x), abs(location.y) + 50);
+	}
+
 	void speak() {
-		if (speech.audio.position() >= speech.audio.length()) {
+		if (speech.audio.position() >= speech.audio.length() - 70) { // need 70 samples tolerance
 			speaking = false;
 		}
 		if (speaking == true) {
@@ -56,13 +73,16 @@ class Actor extends Object {
 	}
 
 	void display() {
-		speak();
 		move();
 		zoom();
+		speak();
 		pushMatrix();
 		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
 		popMatrix();
+		if ((speech.subtitle != "") && (speaking == true)) {
+			showSubs();
+		}
 
 	}
 

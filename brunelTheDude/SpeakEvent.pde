@@ -13,5 +13,9 @@ class SpeakEvent extends Event {
 		actor.sayLine();
 		actor.speaking = true;
 	}
+	
+	void stop() {
+		running = false;
+	}
 
 }

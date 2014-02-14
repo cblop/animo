@@ -31,11 +31,11 @@ public void setup() {
 
 	// put brunel's dialogue into a hash map
 	HashMap<String, Dialogue> brunelDialogue = new HashMap<String, Dialogue>();
-	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3"));
-	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3"));
-	brunelDialogue.put("hello", new Dialogue("sounds/hello_man.mp3"));
-	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3"));
-	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3"));
+	brunelDialogue.put("cool", new Dialogue("sounds/cool_man.mp3", "Cool, man!"));
+	brunelDialogue.put("laugh", new Dialogue("sounds/dude_laugh.mp3", "Hahahaha"));
+	brunelDialogue.put("hello", new Dialogue("sounds/hello_man.mp3", "Hello, man!"));
+	brunelDialogue.put("disco", new Dialogue("sounds/love_disco.mp3", "I love disco!"));
+	brunelDialogue.put("wassup", new Dialogue("sounds/wassup.mp3", "Wassup!"));
 
 	// these are brunel's animations, only one frame each for now
 	PImage[] brunelRest = {loadImage("pics/brunel.png")};
@@ -95,6 +95,7 @@ class Actor extends Object {
 		currentAnim = anims.get("rest");
 		speaking = false;
 		speech = dialogue.get("hello"); // very, very bad
+		speech.subtitle = ""; // nooooooo
 	}
 
 	public void setSpeech(String spch) {
@@ -122,8 +123,24 @@ class Actor extends Object {
 		}
 	}
 
+	public void showSubs() {
+		textSize(32);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x)-2, abs(location.y) + 50);
+		textSize(32);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x)+2, abs(location.y) + 50);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x), abs(location.y) + 52);
+		fill(0, 0, 0);
+		text(speech.subtitle, abs(location.x), abs(location.y) + 48);
+
+		fill(255, 255, 255);
+		text(speech.subtitle, abs(location.x), abs(location.y) + 50);
+	}
+
 	public void speak() {
-		if (speech.audio.position() >= speech.audio.length()) {
+		if (speech.audio.position() >= speech.audio.length() - 70) { // need 70 samples tolerance
 			speaking = false;
 		}
 		if (speaking == true) {
@@ -139,13 +156,16 @@ class Actor extends Object {
 	}
 
 	public void display() {
-		speak();
 		move();
 		zoom();
+		speak();
 		pushMatrix();
 		scale(horient * zoom.x, zoom.y);
 		image(sprite, horient * location.x, location.y, sprite.width, sprite.height);
 		popMatrix();
+		if ((speech.subtitle != "") && (speaking == true)) {
+			showSubs();
+		}
 
 	}
 
@@ -208,11 +228,18 @@ Minim minim = new Minim(this);
 class Dialogue {
 	AudioPlayer audio;
 	FFT fft;
+	String subtitle;
 
 	Dialogue(String filename) {
 		audio = minim.loadFile(filename, 512);
 		fft = new FFT(audio.bufferSize(), audio.sampleRate());
-		//fft.forward(audio.mix);
+		subtitle = "";
+	}
+
+	Dialogue(String filename, String sub) {
+		audio = minim.loadFile(filename, 512);
+		fft = new FFT(audio.bufferSize(), audio.sampleRate());
+		subtitle = sub;
 	}
 
 }
@@ -411,6 +438,10 @@ class SpeakEvent extends Event {
 		actor.setSpeech(dialogue);
 		actor.sayLine();
 		actor.speaking = true;
+	}
+	
+	public void stop() {
+		running = false;
 	}
 
 }
