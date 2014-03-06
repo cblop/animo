@@ -1,14 +1,14 @@
-@prefix event: <http://purl.org/NET/c4dm/event.owl#>
-@prefix time: <http://www.w3.org/2006/time#> .
+@prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/#> .
+@prefix animo: <http://cblop.com/animo/#> .
 
-event:moveDuration
-	a time:Interval ;
-	time:hasBeginning event:moveStart .
-	time:hasDurationDescription
-		time:seconds 12.5 .
-
-
-event:moveStart
-	a time:Instant ;
+animo:moveStart a sem:Event;
+	sem:eventType
 	time:inDateTime
 		time:seconds 2.0 .
+
+animo:brunel
+	a sem:Actor ;
+  sem:actorType animo:atype_protagonist ;
+  foaf:name "Isambard Kingdom Brunel" ;
+
+
